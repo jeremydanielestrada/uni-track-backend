@@ -10,8 +10,8 @@ import { relations } from "drizzle-orm";
 
 export const governorsTable = pgTable("governors", {
   id_num: varchar({ length: 255 }).primaryKey().unique().notNull(),
-  college_dep: text().notNull(),
   name: varchar({ length: 255 }).notNull(),
+  college_dep: text().notNull(),
   password: varchar({ length: 255 }).notNull(),
 });
 
@@ -58,7 +58,7 @@ export const studentsRelation = relations(studentsTable, ({ one }) => ({
     references: [eventsTable.id],
   }),
 
-  assigendBy: one(governorsTable, {
+  assingedBy: one(governorsTable, {
     fields: [studentsTable.assigned_by],
     references: [governorsTable.id_num],
   }),
