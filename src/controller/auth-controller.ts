@@ -6,6 +6,18 @@ import { eq } from "drizzle-orm";
 import { db } from "../index";
 import { getGovernorByIdNum } from "../models/governor";
 
+const setCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true,
+    secure: isProduction, // true in production
+    sameSite: (isProduction ? "none" : "lax") as "none" | "lax", // "none" for cross-origin in production
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: "/",
+  };
+};
+
 export const register = async (req: Request, res: Response) => {
   try {
     const { id_num, name, college_dep, password } = req.body;
@@ -38,6 +50,8 @@ export const register = async (req: Request, res: Response) => {
       { expiresIn: "7d" },
     );
 
+    res.cookie("token", token, setCookieOptions());
+
     return res.status(201).json({
       token,
       user: {
@@ -47,7 +61,7 @@ export const register = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(400).json({ message: "Error registering user" });
+    res.status(500).json({ message: "Error registering user" });
   }
 };
 
@@ -79,11 +93,32 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "7d" },
     );
 
+    res.cookie("token", token, setCookieOptions());
+
     return res.json({
       token,
       user: { id_num: foundGovernor.id_num, name: foundGovernor.name },
     });
   } catch (error) {
-    res.status(400).json({ message: "Error logging user" });
+    res.status(500).json({ message: "Error logging user" });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    // Clear cookie with same options as when it was set
+    res.cookie("token", "", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      expires: new Date(0),
+      path: "/",
+    });
+
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Error logging out" });
   }
 };
