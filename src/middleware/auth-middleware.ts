@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
-  user?: {
+  governor?: {
     id_num: string;
   };
 }
@@ -20,7 +20,7 @@ export const authenticate = (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    req.user = decoded;
+    req.governor = { id_num: decoded.id_num };
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" });
