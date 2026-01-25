@@ -8,7 +8,7 @@ import {
 import express from "express";
 import { authenticate } from "../middleware/auth-middleware";
 
-const eventRouter = express.Router();
+export const eventRouter = express.Router();
 
 eventRouter.get(
   "/get",
