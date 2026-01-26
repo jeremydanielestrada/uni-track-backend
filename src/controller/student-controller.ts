@@ -73,11 +73,26 @@ export const uploadStudents = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: "Invalid file format" });
     }
 
+    const existingStudents = await db
+      .select()
+      .from(studentsTable)
+      .where(eq(studentsTable.event_id, event_id as string));
+
+    const existingIds = new Set(existingStudents.map((s) => s.id_num));
+
+    const newStudents = students.filter(
+      (student) => !existingIds.has(student.id_num),
+    );
+
+    if (newStudents.length === 0) {
+      return res.status(400).json({ message: "All students already exist" });
+    }
+
     // Insert students into database
     const insertedStudents = await db
       .insert(studentsTable)
       .values(
-        students.map((student) => ({
+        newStudents.map((student) => ({
           id_num: student.id_num,
           name: student.name,
           program: student.program,
