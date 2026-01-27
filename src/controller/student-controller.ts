@@ -15,8 +15,14 @@ export const getStudentsByEvent = async (req: AuthRequest, res: Response) => {
 
     const { event_id } = req.params;
 
-    if (!event_id) {
+    if (!event_id || Array.isArray(event_id)) {
       return res.status(400).json({ message: "Event ID is required" });
+    }
+
+    const eventIdInt = parseInt(event_id, 10);
+
+    if (isNaN(eventIdInt)) {
+      return res.status(400).json({ message: "Invalid Event ID" });
     }
 
     const students = await db
@@ -24,8 +30,8 @@ export const getStudentsByEvent = async (req: AuthRequest, res: Response) => {
       .from(studentsTable)
       .where(
         and(
-          eq(studentsTable.event_id, event_id as string),
-          eq(studentsTable.assigned_by, req.governor.id_num),
+          eq(studentsTable.event_id, eventIdInt),
+          eq(studentsTable.assigned_by, req.governor.id),
         ),
       );
 
@@ -46,8 +52,14 @@ export const uploadStudents = async (req: AuthRequest, res: Response) => {
     }
 
     const { event_id } = req.params;
-    if (!event_id) {
+    if (!event_id || Array.isArray(event_id)) {
       return res.status(400).json({ message: "Event ID is required" });
+    }
+
+    const eventIdInt = parseInt(event_id, 10);
+
+    if (isNaN(eventIdInt)) {
+      return res.status(400).json({ message: "Invalid Event ID" });
     }
 
     const students: any[] = [];
@@ -76,7 +88,7 @@ export const uploadStudents = async (req: AuthRequest, res: Response) => {
     const existingStudents = await db
       .select()
       .from(studentsTable)
-      .where(eq(studentsTable.event_id, event_id as string));
+      .where(eq(studentsTable.event_id, eventIdInt));
 
     const existingIds = new Set(existingStudents.map((s) => s.id_num));
 
@@ -96,8 +108,8 @@ export const uploadStudents = async (req: AuthRequest, res: Response) => {
           id_num: student.id_num,
           name: student.name,
           program: student.program,
-          event_id: event_id as string,
-          assigned_by: req.governor!.id_num,
+          event_id: eventIdInt,
+          assigned_by: req.governor!.id,
           is_assigned: false,
           hours_render: 0,
         })),

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
   governor?: {
-    id_num: string;
+    id: number;
   };
 }
 
@@ -20,7 +20,7 @@ export const authenticate = (
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    req.governor = { id_num: decoded.id_num };
+    req.governor = { id: decoded.id };
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" });

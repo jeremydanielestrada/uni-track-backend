@@ -15,7 +15,7 @@ export const getAllEventsByCurrentAuthenticatedGovernor = async (
     const events = await db
       .select()
       .from(eventsTable)
-      .where(eq(eventsTable.gov_id, req.governor.id_num));
+      .where(eq(eventsTable.gov_id, req.governor.id));
 
     if (events.length === 0) {
       return res
@@ -42,7 +42,7 @@ export const createEvent = async (req: AuthRequest, res: Response) => {
       .values({
         name,
         date,
-        gov_id: req.governor.id_num,
+        gov_id: req.governor.id,
       })
       .returning();
 
@@ -62,13 +62,15 @@ export const updateEvent = async (req: AuthRequest, res: Response) => {
 
     const { name, date } = req.body;
 
-    if (!id) {
+    if (!id || Array.isArray(id)) {
       return res.status(400).json({ message: "Event ID is required" });
     }
 
     if (!name || !date) {
       return res.status(400).json({ message: "Name and date are required" });
     }
+
+    const intId = parseInt(id, 10);
 
     const event = await db
       .update(eventsTable)
@@ -77,10 +79,7 @@ export const updateEvent = async (req: AuthRequest, res: Response) => {
         date,
       })
       .where(
-        and(
-          eq(eventsTable.id, id as string),
-          eq(eventsTable.gov_id, req.governor.id_num),
-        ),
+        and(eq(eventsTable.id, intId), eq(eventsTable.gov_id, req.governor.id)),
       )
       .returning();
 
@@ -104,17 +103,16 @@ export const deleteEvent = async (req: AuthRequest, res: Response) => {
 
     const { id } = req.params;
 
-    if (!id) {
+    if (!id || Array.isArray(id)) {
       return res.status(400).json({ message: "Event ID is required" });
     }
+
+    const intId = parseInt(id, 10);
 
     await db
       .delete(eventsTable)
       .where(
-        and(
-          eq(eventsTable.id, id as string),
-          eq(eventsTable.gov_id, req.governor.id_num),
-        ),
+        and(eq(eventsTable.id, intId), eq(eventsTable.gov_id, req.governor.id)),
       );
 
     return res.json({ message: "Event deleted successfully" });
