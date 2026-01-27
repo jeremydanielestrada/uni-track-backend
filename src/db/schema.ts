@@ -5,6 +5,7 @@ import {
   uuid,
   boolean,
   integer,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -29,27 +30,36 @@ export const studentsTable = pgTable("students", {
   id_num: varchar({ length: 255 }).unique().notNull(),
   program: text().notNull(),
   name: varchar({ length: 255 }).notNull(),
-  hours_render: integer().default(0),
   event_id: integer().references(() => eventsTable.id),
   assigned_by: integer().references(() => governorsTable.id),
   is_assigned: boolean().default(false),
 });
 
+export const attendanceLogs = pgTable("attendance_logs", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  student_id: integer().references(() => studentsTable.id),
+  event_id: integer().references(() => eventsTable.id),
+  time_in: timestamp("time_in", { withTimezone: true }).notNull(),
+  time_out: timestamp("time_out", { withTimezone: true }),
+});
+
 //Define Relations
-export const governorsRelations = relations(governorsTable, ({ many }) => ({
+const governorsRelations = relations(governorsTable, ({ many }) => ({
   events: many(eventsTable),
   students: many(studentsTable),
 }));
 
-export const eventsRelations = relations(eventsTable, ({ one, many }) => ({
+const eventsRelations = relations(eventsTable, ({ one, many }) => ({
   students: many(studentsTable),
+  attendanceLogs: many(attendanceLogs),
   governor: one(governorsTable, {
     fields: [eventsTable.gov_id],
     references: [governorsTable.id],
   }),
 }));
 
-export const studentsRelation = relations(studentsTable, ({ one }) => ({
+const studentsRelation = relations(studentsTable, ({ one, many }) => ({
+  attendanceLogs: many(attendanceLogs),
   event: one(eventsTable, {
     fields: [studentsTable.event_id],
     references: [eventsTable.id],
@@ -58,5 +68,16 @@ export const studentsRelation = relations(studentsTable, ({ one }) => ({
   assingedBy: one(governorsTable, {
     fields: [studentsTable.assigned_by],
     references: [governorsTable.id],
+  }),
+}));
+
+const attendanceLogsRelation = relations(attendanceLogs, ({ one }) => ({
+  student: one(studentsTable, {
+    fields: [attendanceLogs.student_id],
+    references: [studentsTable.id],
+  }),
+  event: one(eventsTable, {
+    fields: [attendanceLogs.event_id],
+    references: [eventsTable.id],
   }),
 }));

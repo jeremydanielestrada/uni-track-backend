@@ -44,18 +44,16 @@ export const register = async (req: Request, res: Response) => {
       })
       .returning();
 
-    const token = jwt.sign(
-      { id_num: newGovernor?.id_num },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" },
-    );
+    const token = jwt.sign({ id: newGovernor?.id }, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
 
     res.cookie("token", token, setCookieOptions());
 
     return res.status(201).json({
       token,
       user: {
-        id_num: newGovernor?.id_num,
+        id_num: newGovernor?.id,
         name: newGovernor?.name,
         college_dep: newGovernor?.college_dep,
       },
