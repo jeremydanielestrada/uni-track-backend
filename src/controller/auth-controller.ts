@@ -53,7 +53,8 @@ export const register = async (req: Request, res: Response) => {
     return res.status(201).json({
       token,
       user: {
-        id_num: newGovernor?.id,
+        id: newGovernor?.id,
+        id_num: newGovernor?.id_num,
         name: newGovernor?.name,
         college_dep: newGovernor?.college_dep,
       },
@@ -85,17 +86,20 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      { id_num: foundGovernor.id_num },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" },
-    );
+    const token = jwt.sign({ id: foundGovernor.id }, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
 
     res.cookie("token", token, setCookieOptions());
 
     return res.json({
       token,
-      user: { id_num: foundGovernor.id_num, name: foundGovernor.name },
+      user: {
+        id: foundGovernor.id,
+        id_num: foundGovernor.id_num,
+        name: foundGovernor.name,
+        college_dep: foundGovernor.college_dep,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: "Error logging user" });
