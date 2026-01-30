@@ -12,10 +12,13 @@ export const getAllEventsByCurrentAuthenticatedGovernor = async (
     if (!req.governor) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const events = await db
-      .select()
-      .from(eventsTable)
-      .where(eq(eventsTable.gov_id, req.governor.id));
+    const events = await db.query.eventsTable.findMany({
+      where: eq(eventsTable.gov_id, req.governor.id),
+      with: {
+        students: true,
+      },
+    });
+    console.log(events);
 
     if (events.length === 0) {
       return res

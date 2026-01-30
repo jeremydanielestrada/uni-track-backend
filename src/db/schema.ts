@@ -44,12 +44,12 @@ export const attendanceLogs = pgTable("attendance_logs", {
 });
 
 //Define Relations
-const governorsRelations = relations(governorsTable, ({ many }) => ({
+export const governorsRelations = relations(governorsTable, ({ many }) => ({
   events: many(eventsTable),
   students: many(studentsTable),
 }));
 
-const eventsRelations = relations(eventsTable, ({ one, many }) => ({
+export const eventsRelations = relations(eventsTable, ({ one, many }) => ({
   students: many(studentsTable),
   attendanceLogs: many(attendanceLogs),
   governor: one(governorsTable, {
@@ -58,7 +58,7 @@ const eventsRelations = relations(eventsTable, ({ one, many }) => ({
   }),
 }));
 
-const studentsRelation = relations(studentsTable, ({ one, many }) => ({
+export const studentsRelation = relations(studentsTable, ({ one, many }) => ({
   attendanceLogs: many(attendanceLogs),
   event: one(eventsTable, {
     fields: [studentsTable.event_id],
@@ -71,7 +71,7 @@ const studentsRelation = relations(studentsTable, ({ one, many }) => ({
   }),
 }));
 
-const attendanceLogsRelation = relations(attendanceLogs, ({ one }) => ({
+export const attendanceLogsRelation = relations(attendanceLogs, ({ one }) => ({
   student: one(studentsTable, {
     fields: [attendanceLogs.student_id],
     references: [studentsTable.id],

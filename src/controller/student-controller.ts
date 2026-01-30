@@ -35,7 +35,7 @@ export const getStudentsByEvent = async (req: AuthRequest, res: Response) => {
         ),
       );
 
-    return res.json(students);
+    return res.json({ students: students });
   } catch (error) {
     return res.status(500).json({ message: "Error fetching students" });
   }
