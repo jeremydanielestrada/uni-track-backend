@@ -30,7 +30,7 @@ export const studentsTable = pgTable("students", {
   id_num: varchar({ length: 255 }).unique().notNull(),
   program: text().notNull(),
   name: varchar({ length: 255 }).notNull(),
-  event_id: integer().references(() => eventsTable.id),
+  event_id: integer().references(() => eventsTable.id, { onDelete: "cascade" }),
   assigned_by: integer().references(() => governorsTable.id),
   is_assigned: boolean().default(false),
 });

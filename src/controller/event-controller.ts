@@ -18,7 +18,6 @@ export const getAllEventsByCurrentAuthenticatedGovernor = async (
         students: true,
       },
     });
-    console.log(events);
 
     if (events.length === 0) {
       return res
