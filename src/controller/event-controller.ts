@@ -23,7 +23,7 @@ export const getAllEventsByCurrentAuthenticatedGovernor = async (
         .json({ message: "No events found for this governor" });
     }
 
-    return res.json(events);
+    return res.json({ events: events });
   } catch (error) {
     return res.status(500).json({ message: "Error fetching events" });
   }
