@@ -2,6 +2,8 @@ import express from "express";
 import {
   uploadStudents,
   getStudentsByEvent,
+  authorizedStudent,
+  assignStudent,
 } from "../controller/student-controller";
 import { uploadMiddleware } from "../middleware/student-middlware";
 import { authenticate } from "../middleware/auth-middleware";
@@ -16,3 +18,7 @@ studentRouter.post(
   uploadMiddleware,
   uploadStudents,
 );
+
+studentRouter.put("/assign", authenticate, assignStudent);
+
+studentRouter.post("/authorize", authorizedStudent);

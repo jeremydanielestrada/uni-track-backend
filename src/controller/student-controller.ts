@@ -126,6 +126,52 @@ export const uploadStudents = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const assignStudent = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.governor) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // First, get the current student
+    const currentStudent = await db
+      .select()
+      .from(studentsTable)
+      .where(
+        and(
+          eq(studentsTable.id_num, req.body.id_num),
+          eq(studentsTable.event_id, req.body.event_id),
+        ),
+      )
+      .limit(1);
+
+    if (!currentStudent || currentStudent.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Toggle the is_assigned status
+    const updatedStudent = await db
+      .update(studentsTable)
+      .set({ is_assigned: !currentStudent[0]?.is_assigned })
+      .where(
+        and(
+          eq(studentsTable.id_num, req.body.id_num),
+          eq(studentsTable.event_id, req.body.event_id),
+        ),
+      )
+      .returning();
+
+    const action = updatedStudent[0]?.is_assigned ? "assigned" : "unassigned";
+    return res.json({
+      message: `Student ${action} successfully`,
+      student: updatedStudent[0],
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error updating student assignment" });
+  }
+};
+
 export const authorizedStudent = async (req: any, res: Response) => {
   try {
     const { id_num, event_code } = req.body;
