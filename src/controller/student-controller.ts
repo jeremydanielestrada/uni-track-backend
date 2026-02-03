@@ -1,8 +1,9 @@
 import { eq, and } from "drizzle-orm";
 import { db } from "../index";
-import { studentsTable } from "../db/schema";
-import type { Response } from "express";
+import { studentsTable, eventsTable } from "../db/schema";
+import type { NextFunction, Response } from "express";
 import type { AuthRequest } from "../middleware/auth-middleware";
+import { isAssigned } from "../models/student";
 import csv from "csv-parser";
 import xlsx from "xlsx";
 import { Readable } from "stream";
@@ -122,5 +123,72 @@ export const uploadStudents = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "Error uploading students" });
+  }
+};
+
+export const authorizedStudent = async (req: any, res: Response) => {
+  try {
+    const { id_num, event_code } = req.body;
+    if (!id_num || !event_code) {
+      return res
+        .status(400)
+        .json({ message: "ID number and event code are required" });
+    }
+
+    // Query student with their event
+    const studentWithEvent = await db.query.studentsTable.findFirst({
+      where: eq(studentsTable.id_num, id_num),
+      with: {
+        event: true,
+      },
+    });
+
+    if (!studentWithEvent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    // Check if student is assigned
+    if (!studentWithEvent.is_assigned) {
+      return res.status(403).json({
+        message: "Student is not assigned to any event",
+        authorized: false,
+      });
+    }
+
+    // Check if student has an event
+    if (!studentWithEvent.event) {
+      return res.status(403).json({
+        message: "Student has no event assigned",
+        authorized: false,
+      });
+    }
+
+    // Check if event code matches
+    if (studentWithEvent.event.event_code !== event_code) {
+      return res.status(403).json({
+        message: "Student not authorized for this event",
+        authorized: false,
+      });
+    }
+
+    // Student is authorized
+    return res.json({
+      message: "Student authorized",
+      authorized: true,
+      student: {
+        id_num: studentWithEvent.id_num,
+        name: studentWithEvent.name,
+        program: studentWithEvent.program,
+      },
+      event: {
+        id: studentWithEvent.event.id,
+        name: studentWithEvent.event.name,
+        event_code: studentWithEvent.event.event_code,
+        date: studentWithEvent.event.date,
+      },
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error checking student assignment" });
   }
 };
