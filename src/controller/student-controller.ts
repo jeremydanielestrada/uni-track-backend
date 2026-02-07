@@ -1,12 +1,12 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "../index";
-import { studentsTable, eventsTable } from "../db/schema";
-import type { NextFunction, Response } from "express";
+import { studentsTable, attendanceLogsTable } from "../db/schema";
+import type { Response } from "express";
 import type { AuthRequest } from "../middleware/auth-middleware";
-import { isAssigned } from "../models/student";
 import csv from "csv-parser";
 import xlsx from "xlsx";
 import { Readable } from "stream";
+import type { StudentRequest } from "../middleware/assigned-student-middleware";
 
 export const getStudentsByEvent = async (req: AuthRequest, res: Response) => {
   try {
@@ -163,7 +163,7 @@ export const assignStudent = async (req: AuthRequest, res: Response) => {
     const action = updatedStudent[0]?.is_assigned ? "assigned" : "unassigned";
     return res.json({
       message: `Student ${action} successfully`,
-      student: updatedStudent[0],
+      student: updatedStudent[0], // Return only the updated student
     });
   } catch (error) {
     return res
@@ -175,6 +175,7 @@ export const assignStudent = async (req: AuthRequest, res: Response) => {
 export const authorizedStudent = async (req: any, res: Response) => {
   try {
     const { id_num, event_code } = req.body;
+
     if (!id_num || !event_code) {
       return res
         .status(400)
@@ -236,5 +237,89 @@ export const authorizedStudent = async (req: any, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error checking student assignment" });
+  }
+};
+
+export const scanStudenQr = async (req: StudentRequest, res: Response) => {
+  try {
+    if (!req.assigned_student) {
+      return res.status(400).json({ message: "Not assigned to any student" });
+    }
+
+    const { id_num, event_id } = req.body;
+
+    // Check if there's an open attendance log (time_in exists but no time_out)
+    const openLog = await db
+      .select()
+      .from(attendanceLogsTable)
+      .where(
+        and(
+          eq(attendanceLogsTable.student_id, id_num),
+          eq(attendanceLogsTable.event_id, event_id),
+          isNull(attendanceLogsTable.time_out),
+        ),
+      )
+      .limit(1);
+
+    if (openLog.length > 0) {
+      // Time OUT - Close the attendance log
+      await db
+        .update(attendanceLogsTable)
+        .set({ time_out: new Date() })
+        .where(eq(attendanceLogsTable.id, openLog[0]!.id));
+
+      // Calculate total hours after time out
+      const result = await db
+        .select({
+          totalHours: sql<number>`
+            COALESCE(
+              SUM(EXTRACT(EPOCH FROM (time_out - time_in))) / 3600,
+              0
+            )
+          `,
+        })
+        .from(attendanceLogsTable)
+        .where(
+          and(
+            eq(attendanceLogsTable.student_id, id_num),
+            eq(attendanceLogsTable.event_id, event_id),
+            isNotNull(attendanceLogsTable.time_out),
+          ),
+        );
+
+      const totalHours = result[0]?.totalHours || 0;
+
+      // Update student's total hours
+      await db
+        .update(studentsTable)
+        .set({ hours_render: totalHours })
+        .where(
+          and(
+            eq(studentsTable.id_num, id_num),
+            eq(studentsTable.event_id, event_id),
+          ),
+        );
+
+      return res.json({
+        message: "Time out recorded successfully",
+        action: "time_out",
+        totalHours: Math.round(totalHours * 100) / 100, // Round to 2 decimals
+      });
+    } else {
+      // Time IN - Create new attendance log
+      await db.insert(attendanceLogsTable).values({
+        student_id: id_num,
+        event_id: event_id,
+        time_in: new Date(),
+        time_out: null,
+      });
+
+      return res.json({
+        message: "Time in recorded successfully",
+        action: "time_in",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Error processing QR scan" });
   }
 };

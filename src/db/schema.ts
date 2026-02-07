@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   timestamp,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -32,10 +33,11 @@ export const studentsTable = pgTable("students", {
   name: varchar({ length: 255 }).notNull(),
   event_id: integer().references(() => eventsTable.id, { onDelete: "cascade" }),
   assigned_by: integer().references(() => governorsTable.id),
+  hours_render: doublePrecision("hours_render").default(0),
   is_assigned: boolean().default(false),
 });
 
-export const attendanceLogs = pgTable("attendance_logs", {
+export const attendanceLogsTable = pgTable("attendance_logs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   student_id: integer().references(() => studentsTable.id),
   event_id: integer().references(() => eventsTable.id),
@@ -51,7 +53,7 @@ export const governorsRelations = relations(governorsTable, ({ many }) => ({
 
 export const eventsRelations = relations(eventsTable, ({ one, many }) => ({
   students: many(studentsTable),
-  attendanceLogs: many(attendanceLogs),
+  attendanceLogs: many(attendanceLogsTable),
   governor: one(governorsTable, {
     fields: [eventsTable.gov_id],
     references: [governorsTable.id],
@@ -59,7 +61,7 @@ export const eventsRelations = relations(eventsTable, ({ one, many }) => ({
 }));
 
 export const studentsRelation = relations(studentsTable, ({ one, many }) => ({
-  attendanceLogs: many(attendanceLogs),
+  attendanceLogs: many(attendanceLogsTable),
   event: one(eventsTable, {
     fields: [studentsTable.event_id],
     references: [eventsTable.id],
@@ -71,13 +73,16 @@ export const studentsRelation = relations(studentsTable, ({ one, many }) => ({
   }),
 }));
 
-export const attendanceLogsRelation = relations(attendanceLogs, ({ one }) => ({
-  student: one(studentsTable, {
-    fields: [attendanceLogs.student_id],
-    references: [studentsTable.id],
+export const attendanceLogsRelation = relations(
+  attendanceLogsTable,
+  ({ one }) => ({
+    student: one(studentsTable, {
+      fields: [attendanceLogsTable.student_id],
+      references: [studentsTable.id],
+    }),
+    event: one(eventsTable, {
+      fields: [attendanceLogsTable.event_id],
+      references: [eventsTable.id],
+    }),
   }),
-  event: one(eventsTable, {
-    fields: [attendanceLogs.event_id],
-    references: [eventsTable.id],
-  }),
-}));
+);

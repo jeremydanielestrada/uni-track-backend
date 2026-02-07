@@ -1,9 +1,19 @@
 import type { Request, Response, NextFunction } from "express";
 import { isAssigned } from "../models/student";
 
-export const authorize = (req: Request, res: Response, next: NextFunction) => {
+export interface StudentRequest extends Request {
+  assigned_student?: {
+    id_num: string;
+  };
+}
+
+export const authorize = async (
+  req: StudentRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const assigned = isAssigned(req.body.id_num);
+    const assigned = await isAssigned(req.body.id_num);
 
     if (!assigned) {
       return res.status(401).json({ message: "Student not assigned" });
