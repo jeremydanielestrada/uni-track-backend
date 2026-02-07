@@ -4,9 +4,11 @@ import {
   getStudentsByEvent,
   authorizedStudent,
   assignStudent,
+  scanStudenQr,
 } from "../controller/student-controller";
 import { uploadMiddleware } from "../middleware/student-middlware";
 import { authenticate } from "../middleware/auth-middleware";
+import { authorize } from "../middleware/assigned-student-middleware";
 
 export const studentRouter = express.Router();
 
@@ -22,3 +24,5 @@ studentRouter.post(
 studentRouter.put("/assign", authenticate, assignStudent);
 
 studentRouter.post("/authorize", authorizedStudent);
+
+studentRouter.post("/scan", authorize, scanStudenQr);
