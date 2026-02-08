@@ -242,10 +242,6 @@ export const authorizedStudent = async (req: any, res: Response) => {
 
 export const scanStudenQr = async (req: StudentRequest, res: Response) => {
   try {
-    if (!req.assigned_student) {
-      return res.status(400).json({ message: "Not assigned to any student" });
-    }
-
     const { id_num, event_id } = req.body;
 
     // Check if there's an open attendance log (time_in exists but no time_out)
