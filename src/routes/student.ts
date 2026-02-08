@@ -25,4 +25,4 @@ studentRouter.put("/assign", authenticate, assignStudent);
 
 studentRouter.post("/authorize", authorizedStudent);
 
-studentRouter.post("/scan", authorize, scanStudenQr);
+studentRouter.post("/scan", scanStudenQr);
