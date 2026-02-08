@@ -2,9 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { authRouter } from "./routes/auth";
-import { eventRouter } from "./routes/event";
-import { studentRouter } from "./routes/student";
+import { authRouter } from "./routes/auth.js";
+import { eventRouter } from "./routes/event.js";
+import { studentRouter } from "./routes/student.js";
 
 dotenv.config();
 

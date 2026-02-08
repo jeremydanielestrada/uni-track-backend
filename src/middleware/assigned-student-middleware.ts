@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { isAssigned } from "../models/student";
+import { isAssigned } from "../models/student.js";
 
 export interface StudentRequest extends Request {
   assigned_student?: {

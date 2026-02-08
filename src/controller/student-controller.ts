@@ -1,12 +1,12 @@
 import { eq, and, isNotNull, isNull, sql } from "drizzle-orm";
-import { db } from "../index";
-import { studentsTable, attendanceLogsTable } from "../db/schema";
+import { db } from "../index.js";
+import { studentsTable, attendanceLogsTable } from "../db/schema.js";
 import type { Response } from "express";
-import type { AuthRequest } from "../middleware/auth-middleware";
+import type { AuthRequest } from "../middleware/auth-middleware.js";
 import csv from "csv-parser";
 import xlsx from "xlsx";
 import { Readable } from "stream";
-import type { StudentRequest } from "../middleware/assigned-student-middleware";
+import type { StudentRequest } from "../middleware/assigned-student-middleware.js";
 
 export const getStudentsByEvent = async (req: AuthRequest, res: Response) => {
   try {

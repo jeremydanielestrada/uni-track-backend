@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "../index";
-import { governorsTable } from "../db/schema";
+import { db } from "../index.js";
+import { governorsTable } from "../db/schema.js";
 
 export const getGovernorByIdNum = async (id_num: string) => {
   const governor = await db

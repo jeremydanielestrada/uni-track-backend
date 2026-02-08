@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
-import { db } from "../index";
-import { studentsTable, eventsTable } from "../db/schema";
+import { db } from "../index.js";
+import { studentsTable, eventsTable } from "../db/schema.js";
 
 export const isAssigned = async (student_id: string) => {
   const student = await db

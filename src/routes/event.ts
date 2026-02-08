@@ -3,10 +3,10 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
-} from "../controller/event-controller";
+} from "../controller/event-controller.js";
 
 import express from "express";
-import { authenticate } from "../middleware/auth-middleware";
+import { authenticate } from "../middleware/auth-middleware.js";
 
 export const eventRouter = express.Router();
 

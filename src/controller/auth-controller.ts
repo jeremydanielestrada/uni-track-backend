@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { governorsTable } from "../db/schema";
+import { governorsTable } from "../db/schema.js";
 import { eq } from "drizzle-orm";
-import { db } from "../index";
-import { getGovernorByIdNum } from "../models/governor";
+import { db } from "../index.js";
+import { getGovernorByIdNum } from "../models/governor.js";
 
 const setCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === "production";

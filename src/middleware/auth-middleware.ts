@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { eq } from "drizzle-orm";
-import { db } from "../index";
-import { governorsTable } from "../db/schema";
+import { db } from "../index.js";
+import { governorsTable } from "../db/schema.js";
 
 export interface AuthRequest extends Request {
   governor?: {

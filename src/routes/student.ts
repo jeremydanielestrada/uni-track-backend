@@ -5,10 +5,10 @@ import {
   authorizedStudent,
   assignStudent,
   scanStudenQr,
-} from "../controller/student-controller";
-import { uploadMiddleware } from "../middleware/student-middlware";
-import { authenticate } from "../middleware/auth-middleware";
-import { authorize } from "../middleware/assigned-student-middleware";
+} from "../controller/student-controller.js";
+import { uploadMiddleware } from "../middleware/student-middlware.js";
+import { authenticate } from "../middleware/auth-middleware.js";
+import { authorize } from "../middleware/assigned-student-middleware.js";
 
 export const studentRouter = express.Router();
 

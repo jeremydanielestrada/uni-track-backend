@@ -1,8 +1,8 @@
 import type { Response } from "express";
-import type { AuthRequest } from "../middleware/auth-middleware";
+import type { AuthRequest } from "../middleware/auth-middleware.js";
 import { eq, and } from "drizzle-orm";
-import { db } from "../index";
-import { eventsTable } from "../db/schema";
+import { db } from "../index.js";
+import { eventsTable } from "../db/schema.js";
 
 export const getAllEventsByCurrentAuthenticatedGovernor = async (
   req: AuthRequest,
