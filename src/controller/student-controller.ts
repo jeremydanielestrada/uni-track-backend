@@ -316,6 +316,7 @@ export const scanStudenQr = async (req: StudentRequest, res: Response) => {
       });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Error processing QR scan" });
   }
 };
