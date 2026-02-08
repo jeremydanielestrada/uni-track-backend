@@ -13,14 +13,26 @@ export const authorize = async (
   next: NextFunction,
 ) => {
   try {
-    const assigned = await isAssigned(req.body.id_num);
+    const { id_num } = req.body;
+
+    if (!id_num) {
+      return res.status(400).json({ message: "Student ID is required" });
+    }
+
+    const assigned = await isAssigned(id_num);
 
     if (!assigned) {
       return res.status(401).json({ message: "Student not assigned" });
     }
 
+    // Set the assigned student in the request
+    req.assigned_student = {
+      id_num: id_num,
+    };
+
     next();
   } catch (error) {
+    console.error("Authorization error:", error);
     return res.status(401).json({ message: "Student not assigned" });
   }
 };
